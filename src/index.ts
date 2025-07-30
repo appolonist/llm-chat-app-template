@@ -71,7 +71,7 @@ async function handleChatRequest(
     formData.append("q", prompt);
 
     // Send POST request to the external LLM API
-    const apiResponse = await fetch("https://llm-chat-app-template.karolpiotrowski90.workers.dev", {
+    const apiResponse = await fetch("https://llm-chat-app-template.karolpiotrowski90.workers.dev/api/chat", {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
