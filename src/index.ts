@@ -61,7 +61,13 @@ async function handleChatRequest(
     const { messages = [] } = (await request.json()) as {
       messages: ChatMessage[];
     };
-
+    const body = await request.text();
+    const formData = new URLSearchParams(body)
+    const q = formData.get('q');
+     if (!messages.some((msg) => msg.role === "user")) {
+      messages.unshift({ role: "user", content: q});
+    }
+    
     // Add system prompt if not present
     if (!messages.some((msg) => msg.role === "system")) {
       messages.unshift({ role: "system", content: SYSTEM_PROMPT });
