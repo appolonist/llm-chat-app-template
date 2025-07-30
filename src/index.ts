@@ -59,26 +59,32 @@ async function handleChatRequest(
   try {
     // Parse JSON request body
     const { messages = [] } = (await request.json()) as {
-      messages: ChatMessage[];
+      messages: { role: string; content: string }[];
     };
 
-    // Add system prompt if not present
-    if (!messages.some((msg) => msg.role === "system")) {
-      messages.unshift({ role: "system", content: SYSTEM_PROMPT });
-    }
+    // Find the latest user message as the prompt
+    const userMsg = messages.reverse().find((msg) => msg.role === "user");
+    const prompt = userMsg ? userMsg.content : "";
 
-    // Call the AI model
-    const aiResponse = await env.AI.run(
-      MODEL_ID,
-      {
-        messages,
-        max_tokens: 1024,
-      }
-    );
+    // Prepare form data as required by the external API
+    const formData = new URLSearchParams();
+    formData.append("q", prompt);
 
-    // Return the AI's message as JSON
+    // Send POST request to the external LLM API
+    const apiResponse = await fetch("https://someting.where.llm.live", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: formData.toString(),
+    });
+
+    // Get the response text (or json, depending on API)
+    const responseText = await apiResponse.text();
+
+    // Return the API's response as JSON
     return new Response(
-      JSON.stringify({ message: aiResponse.response }),
+      JSON.stringify({ message: responseText }),
       {
         status: 200,
         headers: { "content-type": "application/json" },
